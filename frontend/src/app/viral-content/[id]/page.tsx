@@ -21,7 +21,7 @@ export default function ViralContentDetailPage() {
   if (loading) return <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
   if (!content) return <div className="p-8 text-center text-muted-foreground">Content not found</div>;
 
-  const relatedNarratives = (allNarratives ?? []).filter((n) => content.narrativeIds.includes(n.id));
+  const relatedNarratives = (allNarratives ?? []).filter((n) => (content.narrativeIds ?? []).includes(n.id));
 
   return (
     <div className="space-y-6">

@@ -20,7 +20,7 @@ export default function NarrativeDetailPage() {
   if (loading) return <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
   if (!narrative) return <div className="p-8 text-center text-muted-foreground">Narrative not found</div>;
 
-  const relatedClaims = (allClaims ?? []).filter((c) => narrative.relatedClaims.includes(c.id));
+  const relatedClaims = (allClaims ?? []).filter((c) => (narrative.relatedClaims ?? []).includes(c.id));
 
   return (
     <div className="space-y-6">
