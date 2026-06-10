@@ -1,26 +1,31 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { MockDataService } from '../../mock-data/mock-data.service';
-import { SocialMediaAggregator } from '../../social-media/aggregator.service';
+import { SocialMediaService } from '../social-media/social-media.service';
 
 @ApiTags('Viral Content')
 @Controller('viral-content')
 export class ViralContentController {
   constructor(
     private readonly mockData: MockDataService,
-    private readonly aggregator: SocialMediaAggregator,
+    private readonly socialMedia: SocialMediaService,
   ) {}
 
   @Get()
   @ApiOperation({ summary: 'List viral content (live + mock fallback)' })
-  async findAll(@Query('platform') platform?: string) {
-    // Try live data first
-    if (platform) {
-      const livePosts = await this.aggregator.fetchByPlatform(platform);
-      if (livePosts.length > 0) return livePosts;
-    } else {
-      const livePosts = await this.aggregator.fetchAll();
-      if (livePosts.length > 0) return livePosts;
+  async findAll(@Query('platform') platform?: string, @Query('query') query?: string) {
+    // Try live data first if query is provided
+    if (query) {
+      try {
+        const result = await this.socialMedia.search({ 
+          query, 
+          platforms: platform ? [platform.toLowerCase()] : undefined,
+          maxResults: 50 
+        });
+        if (result.posts.length > 0) return result.posts;
+      } catch (e) {
+        // Fall through to mock data
+      }
     }
 
     // Fallback to mock data

@@ -116,12 +116,20 @@ export const forecastApi = {
 export const socialMediaApi = {
   getStatus: () =>
     apiClient.get("/api/social-media/status").then((r) => r.data),
-  getFeed: (platform?: string, query?: string) =>
-    apiClient.get("/api/social-media/feed", { params: { platform, query } }).then((r) => r.data),
-  getPlatform: (name: string, query?: string) =>
-    apiClient.get(`/api/social-media/platform/${name}`, { params: { query } }).then((r) => r.data),
-  updateKeys: (keys: Record<string, string>) =>
-    apiClient.post("/api/social-media/keys", keys).then((r) => r.data),
+  search: (query: string, platforms?: string[], maxResults?: number) =>
+    apiClient.get("/api/social-media/search", { 
+      params: { query, platforms: platforms?.join(','), maxResults } 
+    }).then((r) => r.data),
+  trending: (keywords?: string[]) =>
+    apiClient.get("/api/social-media/trending", { 
+      params: { keywords: keywords?.join(',') } 
+    }).then((r) => r.data),
+  getPlatformPosts: (platform: string, query: string, limit?: number) =>
+    apiClient.get(`/api/social-media/platform/${platform}/posts`, { 
+      params: { query, limit } 
+    }).then((r) => r.data),
+  analyze: (text: string) =>
+    apiClient.get("/api/social-media/analyze", { params: { text } }).then((r) => r.data),
 };
 
 // ─── Auth ───

@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { MockDataModule } from './mock-data/mock-data.module';
-import { SocialMediaModule } from './social-media/social-media.module';
+import { SocialMediaModule } from './modules/social-media/social-media.module';
 import { NarrativesController } from './modules/narratives/narratives.controller';
 import { ViralContentController } from './modules/viral-content/viral-content.controller';
 import { ClaimsController } from './modules/claims/claims.controller';

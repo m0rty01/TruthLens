@@ -157,16 +157,11 @@ export default function IntegrationsPage() {
 
     setSaving(true);
     setSaveMsg(null);
-    try {
-      await socialMediaApi.updateKeys(nonEmptyKeys);
-      setSaveMsg("API keys saved successfully!");
-      setKeys({});
-      await loadStatus();
-    } catch {
-      setSaveMsg("Failed to save keys. Check backend is running.");
-    }
+    // API keys are configured via environment variables on the backend
+    // This page shows status only - configure keys in backend/.env
+    setSaveMsg("API keys are configured via environment variables. See backend/.env.example for instructions.");
     setSaving(false);
-    setTimeout(() => setSaveMsg(null), 3000);
+    setTimeout(() => setSaveMsg(null), 5000);
   };
 
   const getStatus = (platform: string) =>
