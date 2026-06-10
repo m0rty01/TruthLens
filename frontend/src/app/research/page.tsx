@@ -49,13 +49,13 @@ export default function ResearchPage() {
 
       {/* Record Counts */}
       {stats?.byTable && (
-        <div className="bg-card rounded-xl border border-border p-5">
+        <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
           <h3 className="font-semibold text-card-foreground mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary" /> Record Counts by Table</h3>
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {Object.entries(stats.byTable).map(([table, count]) => (
               <div key={table} className="p-3 rounded-lg bg-muted text-center">
                 <p className="text-lg font-bold text-card-foreground">{count}</p>
-                <p className="text-xs text-muted-foreground capitalize">{table.replace("_", " ")}</p>
+                <p className="text-xs text-muted-foreground capitalize truncate">{table.replace("_", " ")}</p>
               </div>
             ))}
           </div>

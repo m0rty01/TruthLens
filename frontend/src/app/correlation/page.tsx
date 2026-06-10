@@ -44,21 +44,22 @@ export default function CorrelationPage() {
       {loading && <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}
 
       {/* Correlation Matrix */}
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
         <h3 className="font-semibold text-card-foreground mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary" /> All Correlations</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-3 px-3 font-medium text-muted-foreground">Narrative</th>
-                <th className="text-left py-3 px-3 font-medium text-muted-foreground">Incident Type</th>
-                <th className="text-center py-3 px-3 font-medium text-muted-foreground">Correlation (r)</th>
-                <th className="text-center py-3 px-3 font-medium text-muted-foreground">95% CI</th>
-                <th className="text-center py-3 px-3 font-medium text-muted-foreground">p-value</th>
-                <th className="text-center py-3 px-3 font-medium text-muted-foreground">Sample</th>
-                <th className="text-center py-3 px-3 font-medium text-muted-foreground">Strength</th>
-              </tr>
-            </thead>
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="inline-block min-w-full align-middle">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-3 font-medium text-muted-foreground whitespace-nowrap">Narrative</th>
+                  <th className="text-left py-3 px-3 font-medium text-muted-foreground whitespace-nowrap">Incident Type</th>
+                  <th className="text-center py-3 px-3 font-medium text-muted-foreground whitespace-nowrap">Correlation (r)</th>
+                  <th className="text-center py-3 px-3 font-medium text-muted-foreground whitespace-nowrap">95% CI</th>
+                  <th className="text-center py-3 px-3 font-medium text-muted-foreground whitespace-nowrap">p-value</th>
+                  <th className="text-center py-3 px-3 font-medium text-muted-foreground whitespace-nowrap">Sample</th>
+                  <th className="text-center py-3 px-3 font-medium text-muted-foreground whitespace-nowrap">Strength</th>
+                </tr>
+              </thead>
             <tbody>
               {correlations.map((c) => {
                 const score = c.correlation_score ?? 0;
@@ -89,7 +90,9 @@ export default function CorrelationPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
+        <p className="text-xs text-muted-foreground mt-2 sm:hidden">← Scroll horizontally to see more →</p>
         {data?.methodology && (
           <p className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">{data.methodology}</p>
         )}

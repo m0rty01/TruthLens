@@ -98,9 +98,9 @@ export default function ResiliencePage() {
                     <span className="text-sm capitalize">{countryDetail.country.trend}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
                   <ScoreGauge score={countryDetail.country.overall_score} label="Overall" size="lg" />
-                  <div className="flex-1 grid grid-cols-5 gap-3">
+                  <div className="flex-1 grid grid-cols-3 sm:grid-cols-5 gap-3 w-full">
                     {metricMeta.map((m) => (
                       <div key={m.key} className="text-center">
                         <div className={`mx-auto mb-1 ${m.color}`}>{m.icon}</div>
@@ -126,7 +126,7 @@ export default function ResiliencePage() {
                           </div>
                           <ScoreGauge score={city.overall_score} size="sm" />
                         </div>
-                        <div className="grid grid-cols-5 gap-2">
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                           {metricMeta.map((m) => {
                             const val = (city as any)[m.key] ?? 0;
                             return (
