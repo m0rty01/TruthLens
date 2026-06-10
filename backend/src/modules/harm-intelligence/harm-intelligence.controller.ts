@@ -9,22 +9,19 @@ export class HarmIntelligenceController {
 
   @Get()
   @ApiOperation({ summary: 'List all harm scores' })
-  findAll() {
-    const sqlite = this.db.getDatabase();
-    const scores = sqlite.prepare(`
+  async findAll() {
+    return this.db.query(`
       SELECT hs.*, n.title as narrative_title, n.category as narrative_category, n.total_mentions
       FROM harm_scores hs
       LEFT JOIN narratives n ON hs.narrative_id = n.id
       ORDER BY hs.overall_index DESC
-    `).all();
-    return scores;
+    `);
   }
 
   @Get('index')
   @ApiOperation({ summary: 'Get aggregate Narrative Harm Index' })
-  getIndex() {
-    const sqlite = this.db.getDatabase();
-    const scores = sqlite.prepare('SELECT * FROM harm_scores').all() as any[];
+  async getIndex() {
+    const scores = await this.db.query('SELECT * FROM harm_scores');
     const avg = scores.reduce((s, h) => s + h.overall_index, 0) / (scores.length || 1);
     const avgConfidence = scores.reduce((s, h) => s + h.confidence, 0) / (scores.length || 1);
     return {
@@ -46,25 +43,24 @@ export class HarmIntelligenceController {
 
   @Get(':narrativeId')
   @ApiOperation({ summary: 'Get harm score for a specific narrative' })
-  findByNarrative(@Param('narrativeId') narrativeId: string) {
-    const sqlite = this.db.getDatabase();
-    const score = sqlite.prepare(`
+  async findByNarrative(@Param('narrativeId') narrativeId: string) {
+    const score = await this.db.queryOne(`
       SELECT hs.*, n.title as narrative_title, n.category as narrative_category, n.total_mentions
       FROM harm_scores hs
       LEFT JOIN narratives n ON hs.narrative_id = n.id
       WHERE hs.narrative_id = ?
-    `).get(narrativeId);
+    `, [narrativeId]);
     if (!score) return { message: 'No harm data available for this narrative', narrativeId };
     return {
       ...score,
       disclaimer: 'This score reflects observed associations between narrative spread and reported incidents. It does not establish causation.',
       categories: {
-        physical: { score: (score as any).physical, label: 'Physical Harm', description: 'Observed association with physical incidents or threats' },
-        economic: { score: (score as any).economic, label: 'Economic Harm', description: 'Observed association with economic discrimination reports' },
-        mentalHealth: { score: (score as any).mental_health, label: 'Mental Health Harm', description: 'Observed association with reported psychological impact' },
-        reputation: { score: (score as any).reputation, label: 'Reputation Harm', description: 'Observed association with reputational damage reports' },
-        policy: { score: (score as any).policy, label: 'Policy Harm', description: 'Observed association with discriminatory policy discussions' },
-        community: { score: (score as any).community, label: 'Community Harm', description: 'Observed association with community cohesion impact' },
+        physical: { score: score.physical, label: 'Physical Harm', description: 'Observed association with physical incidents or threats' },
+        economic: { score: score.economic, label: 'Economic Harm', description: 'Observed association with economic discrimination reports' },
+        mentalHealth: { score: score.mental_health, label: 'Mental Health Harm', description: 'Observed association with reported psychological impact' },
+        reputation: { score: score.reputation, label: 'Reputation Harm', description: 'Observed association with reputational damage reports' },
+        policy: { score: score.policy, label: 'Policy Harm', description: 'Observed association with discriminatory policy discussions' },
+        community: { score: score.community, label: 'Community Harm', description: 'Observed association with community cohesion impact' },
       },
     };
   }

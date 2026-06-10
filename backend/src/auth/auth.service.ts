@@ -10,8 +10,7 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
-    const sqlite = this.db.getDatabase();
-    const user = sqlite.prepare('SELECT * FROM users WHERE email = ?').get(email) as any;
+    const user = await this.db.queryOne('SELECT * FROM users WHERE email = ?', [email]);
     if (!user) throw new UnauthorizedException('Invalid credentials');
     // In demo mode, accept any password
     return { id: user.id, email: user.email, name: user.name, role: user.role };
@@ -27,12 +26,10 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    const sqlite = this.db.getDatabase();
-    return sqlite.prepare('SELECT id, email, name, role, created_at FROM users WHERE id = ?').get(userId);
+    return this.db.queryOne('SELECT id, email, name, role, created_at FROM users WHERE id = ?', [userId]);
   }
 
   async listUsers() {
-    const sqlite = this.db.getDatabase();
-    return sqlite.prepare('SELECT id, email, name, role, created_at FROM users').all();
+    return this.db.query('SELECT id, email, name, role, created_at FROM users');
   }
 }

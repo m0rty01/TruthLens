@@ -9,16 +9,14 @@ export class ResilienceController {
 
   @Get()
   @ApiOperation({ summary: 'Get all resilience scores' })
-  findAll() {
-    const sqlite = this.db.getDatabase();
-    return sqlite.prepare('SELECT * FROM resilience_scores ORDER BY overall_score DESC').all();
+  async findAll() {
+    return this.db.query('SELECT * FROM resilience_scores ORDER BY overall_score DESC');
   }
 
   @Get('trends')
   @ApiOperation({ summary: 'Get resilience trend analysis' })
-  getTrends() {
-    const sqlite = this.db.getDatabase();
-    const scores = sqlite.prepare('SELECT * FROM resilience_scores WHERE city IS NULL').all() as any[];
+  async getTrends() {
+    const scores = await this.db.query('SELECT * FROM resilience_scores WHERE city IS NULL');
     const improving = scores.filter((s) => s.trend === 'improving').length;
     const declining = scores.filter((s) => s.trend === 'declining').length;
     const stable = scores.filter((s) => s.trend === 'stable').length;
@@ -34,10 +32,9 @@ export class ResilienceController {
 
   @Get(':country')
   @ApiOperation({ summary: 'Get resilience scores for a specific country' })
-  findByCountry(@Param('country') country: string) {
-    const sqlite = this.db.getDatabase();
-    const countryScore = sqlite.prepare('SELECT * FROM resilience_scores WHERE country = ? AND city IS NULL').get(country);
-    const cityScores = sqlite.prepare('SELECT * FROM resilience_scores WHERE country = ? AND city IS NOT NULL ORDER BY overall_score DESC').all(country);
+  async findByCountry(@Param('country') country: string) {
+    const countryScore = await this.db.queryOne('SELECT * FROM resilience_scores WHERE country = ? AND city IS NULL', [country]);
+    const cityScores = await this.db.query('SELECT * FROM resilience_scores WHERE country = ? AND city IS NOT NULL ORDER BY overall_score DESC', [country]);
     return {
       country: countryScore,
       cities: cityScores,

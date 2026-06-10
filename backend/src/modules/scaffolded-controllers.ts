@@ -41,35 +41,31 @@ export class BotDetectionController {
 export class CommunityReportController {
   constructor(private readonly mockData: MockDataService, private db: DatabaseService) {}
   @Get() @ApiOperation({ summary: 'List community reports' })
-  findAll() {
-    const sqlite = this.db.getDatabase();
-    return sqlite.prepare('SELECT * FROM incidents ORDER BY reported_at DESC').all();
+  async findAll() {
+    return this.db.query('SELECT * FROM incidents ORDER BY reported_at DESC');
   }
   @Post() @ApiOperation({ summary: 'Submit community report' })
-  create(@Body() body: any) {
-    const sqlite = this.db.getDatabase();
+  async create(@Body() body: any) {
     const id = `inc-${Date.now()}`;
-    sqlite.prepare('INSERT INTO incidents (id, title, category, country, city, severity, reported_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
-      id, body.title || 'Untitled', body.category || 'Other', body.country || '', body.city || '', 'low', new Date().toISOString().split('T')[0], 'pending'
+    await this.db.execute(
+      'INSERT INTO incidents (id, title, category, country, city, severity, reported_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, body.title || 'Untitled', body.category || 'Other', body.country || '', body.city || '', 'low', new Date().toISOString().split('T')[0], 'pending']
     );
     return { status: 'submitted', id };
   }
   @Post(':id/verify') @ApiOperation({ summary: 'Verify a report' })
-  verify(@Param('id') id: string, @Body() body: { reason?: string }) {
-    const sqlite = this.db.getDatabase();
-    sqlite.prepare("UPDATE incidents SET status = 'verified', verification_notes = ? WHERE id = ?").run(body.reason || 'Verified', id);
+  async verify(@Param('id') id: string, @Body() body: { reason?: string }) {
+    await this.db.execute("UPDATE incidents SET status = 'verified', verification_notes = ? WHERE id = ?", [body.reason || 'Verified', id]);
     return { status: 'verified', id };
   }
   @Post(':id/dismiss') @ApiOperation({ summary: 'Dismiss a report' })
-  dismiss(@Param('id') id: string, @Body() body: { reason?: string }) {
-    const sqlite = this.db.getDatabase();
-    sqlite.prepare("UPDATE incidents SET status = 'dismissed', verification_notes = ? WHERE id = ?").run(body.reason || 'Dismissed', id);
+  async dismiss(@Param('id') id: string, @Body() body: { reason?: string }) {
+    await this.db.execute("UPDATE incidents SET status = 'dismissed', verification_notes = ? WHERE id = ?", [body.reason || 'Dismissed', id]);
     return { status: 'dismissed', id };
   }
   @Post(':id/appeal') @ApiOperation({ summary: 'Appeal a dismissed report' })
-  appeal(@Param('id') id: string, @Body() body: { reason: string }) {
-    const sqlite = this.db.getDatabase();
-    sqlite.prepare("UPDATE incidents SET status = 'appealed', appealed_at = ?, appeal_reason = ? WHERE id = ?").run(new Date().toISOString(), body.reason, id);
+  async appeal(@Param('id') id: string, @Body() body: { reason: string }) {
+    await this.db.execute("UPDATE incidents SET status = 'appealed', appealed_at = ?, appeal_reason = ? WHERE id = ?", [new Date().toISOString(), body.reason, id]);
     return { status: 'appealed', id };
   }
   @Post(':id/evidence') @ApiOperation({ summary: 'Add evidence to report' })

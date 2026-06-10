@@ -9,15 +9,14 @@ export class ResearchController {
 
   @Get('datasets')
   @ApiOperation({ summary: 'List available research datasets' })
-  getDatasets() {
-    const sqlite = this.db.getDatabase();
-    const narrativeCount = (sqlite.prepare('SELECT COUNT(*) as c FROM narratives').get() as any).c;
-    const claimCount = (sqlite.prepare('SELECT COUNT(*) as c FROM claims').get() as any).c;
-    const incidentCount = (sqlite.prepare('SELECT COUNT(*) as c FROM incidents').get() as any).c;
-    const harmCount = (sqlite.prepare('SELECT COUNT(*) as c FROM harm_scores').get() as any).c;
-    const correlationCount = (sqlite.prepare('SELECT COUNT(*) as c FROM correlations').get() as any).c;
-    const resilienceCount = (sqlite.prepare('SELECT COUNT(*) as c FROM resilience_scores').get() as any).c;
-    const alertCount = (sqlite.prepare('SELECT COUNT(*) as c FROM alerts').get() as any).c;
+  async getDatasets() {
+    const narrativeCount = (await this.db.queryOne('SELECT COUNT(*) as c FROM narratives'))?.c || 0;
+    const claimCount = (await this.db.queryOne('SELECT COUNT(*) as c FROM claims'))?.c || 0;
+    const incidentCount = (await this.db.queryOne('SELECT COUNT(*) as c FROM incidents'))?.c || 0;
+    const harmCount = (await this.db.queryOne('SELECT COUNT(*) as c FROM harm_scores'))?.c || 0;
+    const correlationCount = (await this.db.queryOne('SELECT COUNT(*) as c FROM correlations'))?.c || 0;
+    const resilienceCount = (await this.db.queryOne('SELECT COUNT(*) as c FROM resilience_scores'))?.c || 0;
+    const alertCount = (await this.db.queryOne('SELECT COUNT(*) as c FROM alerts'))?.c || 0;
 
     return [
       { id: 'narratives', name: 'Narrative Tracking Data', description: 'All tracked narratives with trend scores, platform distribution, and lifecycle stages', records: narrativeCount, format: 'JSON', lastUpdated: '2026-06-10', accessLevel: 'public' },
@@ -32,8 +31,7 @@ export class ResearchController {
 
   @Get('export/:dataset')
   @ApiOperation({ summary: 'Export a dataset as JSON' })
-  exportDataset(@Param('dataset') dataset: string) {
-    const sqlite = this.db.getDatabase();
+  async exportDataset(@Param('dataset') dataset: string) {
     const tableMap: Record<string, string> = {
       narratives: 'SELECT id, title, description, category, trend_score, trend_direction, trend_velocity, first_seen, last_updated, total_mentions, tags, lifecycle_stage, harm_score FROM narratives',
       claims: 'SELECT id, text, classification, confidence_score, context, narrative_id, origin_platform, first_seen, times_checked, exaggeration_index FROM claims',
@@ -45,8 +43,8 @@ export class ResearchController {
     };
     const query = tableMap[dataset];
     if (!query) return { error: `Unknown dataset: ${dataset}`, available: Object.keys(tableMap) };
-    const data = sqlite.prepare(query).all();
-    return { dataset, records: (data as any[]).length, exportedAt: new Date().toISOString(), data };
+    const data = await this.db.query(query);
+    return { dataset, records: data.length, exportedAt: new Date().toISOString(), data };
   }
 
   @Get('methodology')
@@ -64,13 +62,13 @@ export class ResearchController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get research statistics overview' })
-  getStats() {
-    const sqlite = this.db.getDatabase();
+  async getStats() {
     const tables = ['narratives', 'claims', 'incidents', 'harm_scores', 'correlations', 'resilience_scores', 'alerts', 'audit_logs', 'users'];
     const stats: Record<string, number> = {};
-    tables.forEach((t) => {
-      stats[t] = (sqlite.prepare(`SELECT COUNT(*) as c FROM ${t}`).get() as any).c;
-    });
+    for (const t of tables) {
+      const result = await this.db.queryOne(`SELECT COUNT(*) as c FROM ${t}`);
+      stats[t] = result?.c || 0;
+    }
     return {
       totalRecords: Object.values(stats).reduce((a, b) => a + b, 0),
       byTable: stats,
