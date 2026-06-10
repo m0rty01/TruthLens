@@ -1,0 +1,74 @@
+# TruthLens - Narrative Intelligence Platform
+# Uncomment services as needed for development
+
+version: "3.8"
+
+services:
+  # PostgreSQL - Primary relational database
+  # postgres:
+  #   image: postgres:16-alpine
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_DB: truthlens
+  #     POSTGRES_USER: truthlens
+  #     POSTGRES_PASSWORD: truthlens_dev
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+  # Neo4j - Graph database for network analysis
+  # neo4j:
+  #   image: neo4j:5-community
+  #   ports:
+  #     - "7474:7474"
+  #     - "7687:7687"
+  #   environment:
+  #     NEO4J_AUTH: neo4j/truthlens_dev
+  #   volumes:
+  #     - neo4j_data:/data
+
+  # Redis - Caching and session storage
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+
+  # Elasticsearch - Full text search
+  # elasticsearch:
+  #   image: elasticsearch:8.12.0
+  #   ports:
+  #     - "9200:9200"
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #   volumes:
+  #     - es_data:/usr/share/elasticsearch/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=development
+
+# volumes:
+#   postgres_data:
+#   neo4j_data:
+#   redis_data:
+#   es_data:
