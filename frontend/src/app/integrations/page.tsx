@@ -138,7 +138,7 @@ export default function IntegrationsPage() {
     setLoading(true);
     try {
       const data = await socialMediaApi.getStatus();
-      setStatuses(data);
+      setStatuses(data.platforms ?? []);
     } catch {
       setStatuses([]);
     }

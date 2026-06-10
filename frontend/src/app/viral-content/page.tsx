@@ -20,12 +20,12 @@ export default function ViralContentPage() {
     () => viralContentApi.list(),
     []
   );
-  const { data: platformStatuses } = useApi<{ platform: string; configured: boolean }[]>(
+  const { data: statusData } = useApi<{ platforms: { platform: string; configured: boolean }[] }>(
     () => socialMediaApi.getStatus(),
     []
   );
 
-  const configuredPlatforms = (platformStatuses ?? []).filter((s) => s.configured).map((s) => s.platform);
+  const configuredPlatforms = ((statusData?.platforms ?? []) as { platform: string; configured: boolean }[]).filter((s) => s.configured).map((s) => s.platform);
   const hasLiveApis = configuredPlatforms.length > 0;
 
   const filtered = (allContent ?? []).filter(
