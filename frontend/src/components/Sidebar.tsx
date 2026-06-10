@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Radar,
   Flame,
@@ -40,6 +40,8 @@ import {
   ShieldAlert,
   Database,
   LayoutGrid,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -125,19 +127,43 @@ const navGroups: NavGroup[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <aside
-      className={cn(
-        "flex flex-col bg-sidebar-bg text-sidebar-fg h-screen sticky top-0 transition-all duration-300 border-r border-slate-800",
-        collapsed ? "w-16" : "w-64"
-      )}
-    >
+  // Close mobile drawer when route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
+  const renderNavContent = (isMobile = false) => (
+    <>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-800 shrink-0">
-        <BrainCircuit className="w-7 h-7 text-sidebar-accent shrink-0" />
-        {!collapsed && (
-          <span className="font-bold text-lg tracking-tight">TruthLens</span>
+      <div className={cn(
+        "flex items-center gap-3 px-4 h-16 border-b border-slate-800 shrink-0",
+        isMobile && "justify-between"
+      )}>
+        <div className="flex items-center gap-3">
+          <BrainCircuit className="w-7 h-7 text-sidebar-accent shrink-0" />
+          {(!collapsed || isMobile) && (
+            <span className="font-bold text-lg tracking-tight">TruthLens</span>
+          )}
+        </div>
+        {isMobile && (
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-sidebar-muted transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         )}
       </div>
 
@@ -154,12 +180,12 @@ export default function Sidebar() {
           )}
         >
           <LayoutDashboard className="w-4 h-4 shrink-0" />
-          {!collapsed && <span>Dashboard</span>}
+          {(!collapsed || isMobile) && <span>Dashboard</span>}
         </Link>
 
         {navGroups.map((group) => (
           <div key={group.title} className="mb-4">
-            {!collapsed && (
+            {(!collapsed || isMobile) && (
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">
                 {group.title}
               </p>
@@ -170,16 +196,17 @@ export default function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => isMobile && setMobileOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                     isActive
                       ? "bg-sidebar-accent/20 text-white"
                       : "text-slate-400 hover:bg-sidebar-muted hover:text-white"
                   )}
-                  title={collapsed ? item.label : undefined}
+                  title={collapsed && !isMobile ? item.label : undefined}
                 >
                   <span className="shrink-0">{item.icon}</span>
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {(!collapsed || isMobile) && <span className="truncate">{item.label}</span>}
                 </Link>
               );
             })}
@@ -187,13 +214,56 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Collapse toggle */}
+      {/* Collapse toggle (desktop only) */}
+      {!isMobile && (
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="flex items-center justify-center h-12 border-t border-slate-800 text-slate-400 hover:text-white hover:bg-sidebar-muted transition-colors shrink-0"
+        >
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+      )}
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile menu button */}
       <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center justify-center h-12 border-t border-slate-800 text-slate-400 hover:text-white hover:bg-sidebar-muted transition-colors shrink-0"
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-sidebar-bg text-white shadow-lg border border-slate-700"
+        aria-label="Open menu"
       >
-        {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        <Menu className="w-5 h-5" />
       </button>
-    </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/60 z-40"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={cn(
+          "lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-sidebar-bg text-sidebar-fg flex flex-col transform transition-transform duration-300 ease-in-out",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {renderNavContent(true)}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden lg:flex flex-col bg-sidebar-bg text-sidebar-fg h-screen sticky top-0 transition-all duration-300 border-r border-slate-800",
+          collapsed ? "w-16" : "w-64"
+        )}
+      >
+        {renderNavContent(false)}
+      </aside>
+    </>
   );
 }

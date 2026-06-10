@@ -23,17 +23,17 @@ export function DashboardCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow">
+    <div className="bg-card rounded-xl border border-border p-4 sm:p-5 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-muted-foreground font-medium">{title}</p>
-          <p className="text-3xl font-bold mt-1 text-card-foreground">{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium truncate">{title}</p>
+          <p className="text-2xl sm:text-3xl font-bold mt-1 text-card-foreground">{value}</p>
           {subtitle && (
-            <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>
           )}
         </div>
         {icon && (
-          <div className="p-2 rounded-lg bg-muted text-muted-foreground">{icon}</div>
+          <div className="p-2 rounded-lg bg-muted text-muted-foreground shrink-0">{icon}</div>
         )}
       </div>
       {trend && (
@@ -219,14 +219,14 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4 sm:mb-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">{title}</h1>
         {description && (
           <p className="text-sm text-muted-foreground mt-1">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
     </div>
   );
 }
