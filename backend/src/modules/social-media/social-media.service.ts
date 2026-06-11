@@ -137,6 +137,32 @@ export class SocialMediaService {
     };
   }
 
+  // Get a single post by ID (for live content IDs like "live-youtube-xxx")
+  async getPostById(id: string) {
+    // Parse the ID format: live-{platform}-{actualId}
+    const match = id.match(/^live-(\w+)-(.+)$/);
+    if (!match) return null;
+
+    const [, platform, actualId] = match;
+    
+    try {
+      let post: RawPost | null = null;
+      
+      if (platform === 'youtube' && this.youtube.isConfigured()) {
+        post = await this.youtube.getVideoById(actualId);
+      }
+      // Add other platforms here as needed
+      
+      if (post) {
+        return transformToViralContent(post);
+      }
+    } catch (error) {
+      this.logger.error(`getPostById error: ${error.message}`);
+    }
+    
+    return null;
+  }
+
   // Get trending narratives based on keywords
   async getTrending(keywords?: string[]): Promise<TrendingResult> {
     const searchKeywords = keywords || DEFAULT_KEYWORDS;

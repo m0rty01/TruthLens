@@ -32,7 +32,24 @@ interface YouTubeSearchResponse {
 }
 
 interface YouTubeVideoDetailsResponse {
-  items: { id: string; statistics: YouTubeStatistics; snippet: { tags?: string[]; defaultLanguage?: string } }[];
+  items: { 
+    id: string; 
+    statistics: YouTubeStatistics; 
+    snippet: { 
+      tags?: string[]; 
+      defaultLanguage?: string;
+      title?: string;
+      description?: string;
+      channelTitle?: string;
+      channelId?: string;
+      publishedAt?: string;
+      thumbnails?: {
+        default?: { url: string };
+        medium?: { url: string };
+        high?: { url: string };
+      };
+    } 
+  }[];
 }
 
 @Injectable()
@@ -137,6 +154,56 @@ export class YouTubeService implements PlatformService {
       mentions: [],
       keywords: query ? [query] : [],
     };
+  }
+
+  // Get a single video by ID
+  async getVideoById(videoId: string): Promise<RawPost | null> {
+    if (!this.isConfigured()) return null;
+
+    try {
+      const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${this.apiKey}`;
+      const response = await fetch(url);
+      if (!response.ok) return null;
+
+      const data: YouTubeVideoDetailsResponse = await response.json();
+      if (!data.items || data.items.length === 0) return null;
+
+      const video = data.items[0];
+      const statistics = video.statistics;
+      const snippet = video.snippet;
+
+      const viewCount = parseInt(statistics?.viewCount || '0', 10);
+      const likeCount = parseInt(statistics?.likeCount || '0', 10);
+      const commentCount = parseInt(statistics?.commentCount || '0', 10);
+
+      return {
+        id: videoId,
+        platform: 'YouTube',
+        authorName: snippet.channelTitle || 'Unknown',
+        authorHandle: snippet.channelTitle || 'Unknown',
+        authorHandleUrl: `https://youtube.com/channel/${snippet.channelId || 'UC'}`,
+        followerCount: 0,
+        authorVerified: false,
+        text: `${snippet.title || ''}\n\n${snippet.description || ''}`.substring(0, 500),
+        url: `https://youtube.com/watch?v=${videoId}`,
+        createdAt: snippet.publishedAt || new Date().toISOString(),
+        language: snippet.defaultLanguage || 'en',
+        hasVideo: true,
+        hasImage: false,
+        thumbnailUrl: snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url,
+        likeCount,
+        shareCount: 0,
+        replyCount: commentCount,
+        impressions: viewCount,
+        viewCount,
+        hashtags: snippet.tags || [],
+        mentions: [],
+        keywords: [],
+      };
+    } catch (error) {
+      this.logger.error(`YouTube getVideoById error: ${error.message}`);
+      return null;
+    }
   }
 
   // Get trending videos for a specific topic
